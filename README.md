@@ -1,9 +1,7 @@
 # Nova Field Dependency Container
-_This package is based on the work by https://github.com/epartment/nova-dependency-container_
-
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/elipzis/nova-dependency-container.svg)](https://packagist.org/packages/elipzis/nova-dependency-container)
-[![Total Downloads](https://img.shields.io/packagist/dt/elipzis/nova-dependency-container.svg)](https://packagist.org/packages/elipzis/nova-dependency-container)
-[![License](https://img.shields.io/packagist/l/elipzis/nova-dependency-container.svg)](https://github.com/elipzis/nova-dependency-container/blob/master/LICENSE.md)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/epartment/nova-dependency-container.svg)](https://packagist.org/packages/epartment/nova-dependency-container)
+[![Total Downloads](https://img.shields.io/packagist/dt/epartment/nova-dependency-container.svg)](https://packagist.org/packages/epartment/nova-dependency-container)
+[![License](https://img.shields.io/packagist/l/epartment/nova-dependency-container.svg)](https://github.com/epartment/nova-dependency-container/blob/master/LICENSE.md)
 
 ### Description
 
@@ -11,20 +9,20 @@ A container for grouping fields that depend on other field values. Dependencies 
 
 ### Demo
 
-![Demo](https://raw.githubusercontent.com/elipzis/nova-dependency-container/master/docs/demo.gif)
+![Demo](https://raw.githubusercontent.com/epartment/nova-dependency-container/master/docs/demo.gif)
 
 ### Installation
 
 The package can be installed through Composer.
 
 ```bash
-composer require elipzis/nova-dependency-container
+composer require epartment/nova-dependency-container
 ```
 
 ### Usage
 
-1. Add the `elipzis\NovaDependencyContainer\HasDependencies` trait to your Nova Resource.
-2. Add the `elipzis\NovaDependencyContainer\NovaDependencyContainer` to your Nova Resource `fields` method.
+1. Add the `epartment\NovaDependencyContainer\HasDependencies` trait to your Nova Resource.
+2. Add the `epartment\NovaDependencyContainer\NovaDependencyContainer` to your Nova Resource `fields` method.
 
 ```php
 class Page extends Resource
@@ -70,8 +68,7 @@ The fields used as dependencies can by of any of the default Laravel Nova field 
 
 For example a checkbox:
 
-![Demo](https://raw.githubusercontent.com/elipzis/nova-dependency-container/master/docs/demo-2.gif)
+![Demo](https://raw.githubusercontent.com/epartment/nova-dependency-container/master/docs/demo-2.gif)
 
 ### License
-The MIT License (MIT). Please see [License File](https://github.com/elipzis/nova-dependency-container/blob/master/LICENSE.md) for more information.
-Forked from [https://github.com/epartment/nova-dependency-container](https://github.com/epartment/nova-dependency-container/).
+The MIT License (MIT). Please see [License File](https://github.com/epartment/nova-dependency-container/blob/master/LICENSE.md) for more information.

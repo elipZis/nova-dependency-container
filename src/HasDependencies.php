@@ -1,6 +1,6 @@
 <?php
 
-namespace elipZis\NovaDependencyContainer;
+namespace Epartment\NovaDependencyContainer;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;

@@ -1,6 +1,6 @@
 <?php
 
-namespace elipZis\NovaDependencyContainer;
+namespace Epartment\NovaDependencyContainer;
 
 use Laravel\Nova\Nova;
 use Laravel\Nova\Events\NovaServiceProviderRegistered;
@@ -20,7 +20,7 @@ class FieldServiceProvider extends ServiceProvider {
 		// Override ActionController after NovaServiceProvider loaded
 		Event::listen(NovaServiceProviderRegistered::class, static function() {
 			app('router')->middleware('nova')->post('/nova-api/{resource}/action',
-				['uses' => '\elipZis\NovaDependencyContainer\Http\Controllers\ActionController@store']);
+				['uses' => '\Epartment\NovaDependencyContainer\Http\Controllers\ActionController@store']);
 		});
 
 		Nova::serving(static function(ServingNova $event) {

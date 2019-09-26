@@ -1,6 +1,6 @@
 {
-    "name": "elipzis/nova-dependency-container",
-    "description": "A Laravel Nova field container allowing to depend on other fields values, based on epartment/nova-dependency-container",
+    "name": "epartment/nova-dependency-container",
+    "description": "A Laravel Nova field container allowing to depend on other fields values",
     "keywords": [
         "laravel",
         "nova"
@@ -11,13 +11,13 @@
     },
     "autoload": {
         "psr-4": {
-            "elipZis\\NovaDependencyContainer\\": "src/"
+            "Epartment\\NovaDependencyContainer\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "elipZis\\NovaDependencyContainer\\FieldServiceProvider"
+                "Epartment\\NovaDependencyContainer\\FieldServiceProvider"
             ]
         }
     },
