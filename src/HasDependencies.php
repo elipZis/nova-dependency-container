@@ -4,44 +4,46 @@ namespace Epartment\NovaDependencyContainer;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Fields\FieldCollection;
 use Laravel\Nova\Http\Requests\NovaRequest;
-use Illuminate\Support\Str;
 
-/**
- */
-trait HasDependencies {
-	/**
-	 * @var array
-	 */
-	protected $childFieldsArr = [];
+trait HasDependencies
+{
+    protected $childFieldsArr = [];
+    
+    /**
+     * @param NovaRequest $request
+     * @return FieldCollection|\Illuminate\Support\Collection
+     */
+    public function availableFields(NovaRequest $request)
+    {
+        // Needs to be filtered once to resolve Panels
+        $fields = $this->filter($this->fields($request));
+        $availableFields = [];
 
-	/**
-	 * @param NovaRequest $request
-	 * @return FieldCollection|Collection
-	 */
-	public function availableFields(NovaRequest $request) {
-		// Needs to be filtered once to resolve Panels
-		$fields = $this->filter($this->fields($request));
-		$availableFields = [];
-
-		foreach($fields as $field) {
-			if($field instanceof NovaDependencyContainer) {
-				$availableFields[] = $field;
-				if($this->doesRouteRequireChildFields()) {
-					$this->extractChildFields($field->meta['fields']);
+        foreach ($fields as $field) {
+            if ($field instanceof NovaDependencyContainer) {
+                $availableFields[] = $field;
+				// @todo: this should only be checked on `$request->method() === 'PUT'`, e.g store/update.
+				if($field->areDependenciesSatisfied($request)) {
+					// check if dependency is sta
+					if ($this->doesRouteRequireChildFields()) {
+						$this->extractChildFields($field->meta['fields']);
+					}
 				}
-			} else {
-				$availableFields[] = $field;
-			}
-		}
+            } else {
+                $availableFields[] = $field;
+            }
+        }
 
-		if($this->childFieldsArr) {
-			$availableFields = array_merge($availableFields, $this->childFieldsArr);
-		}
-
-		return new FieldCollection(array_values($this->filter($availableFields)));
-	}
+        if ($this->childFieldsArr) {
+            $availableFields = array_merge($availableFields, $this->childFieldsArr);
+        }
+        
+        return new FieldCollection(array_values($this->filter($availableFields)));
+    }
 
     /**
      * @return bool
@@ -88,29 +90,34 @@ trait HasDependencies {
 		return $childField;
 	}
 
-	/**
-	 * Validate action fields
-	 * Overridden using ActionController & ActionRequest by modifying routes
-	 *
-	 * @return void
-	 */
-	public function validateFields() {
-		$availableFields = [];
-		foreach($this->action()->fields() as $field) {
-			if($field instanceof NovaDependencyContainer) {
-				$availableFields[] = $field;
-				$this->extractChildFields($field->meta['fields']);
-			} else {
-				$availableFields[] = $field;
-			}
-		}
+    /**
+     * Validate action fields
+     * Overridden using ActionController & ActionRequest by modifying routes
+     * @return void
+     */
+    public function validateFields() {
+        $availableFields = [];
+        if ( !empty( ($action_fields = $this->action()->fields()) ) ) {
+            foreach ($action_fields as $field) {
+                if ($field instanceof NovaDependencyContainer) {
+                    // do not add any fields for validation if container is not satisfied
+                    // @todo: this should only be checked on `$request->method() === 'PUT'`, e.g store/update.
+                    if($field->areDependenciesSatisfied($this)) {
+                        $availableFields[] = $field;
+                        $this->extractChildFields($field->meta['fields']);
+                    }
+                } else {
+                    $availableFields[] = $field;
+                }
+            }
+        }
 
 		if($this->childFieldsArr) {
 			$availableFields = array_merge($availableFields, $this->childFieldsArr);
 		}
 
-		$this->validate(collect($availableFields)->mapWithKeys(function($field) {
-			return $field->getCreationRules($this);
-		})->all());
-	}
+        $this->validate(collect($availableFields)->mapWithKeys(function ($field) {
+            return $field->getCreationRules($this);
+        })->all());
+    }
 }

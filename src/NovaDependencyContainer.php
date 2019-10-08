@@ -2,6 +2,7 @@
 
 namespace Epartment\NovaDependencyContainer;
 
+use Illuminate\Database\Eloquent\Model;
 use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
@@ -43,20 +44,76 @@ class NovaDependencyContainer extends Field {
 	 */
 	public function dependsOn($field, $value) {
 		return $this->withMeta([
-			'dependencies' => array_merge($this->meta['dependencies'], [['field' => $field, 'value' => $value]])
+			'dependencies' => array_merge($this->meta['dependencies'], [
+				$this->getFieldLayout($field, $value)
+			])
 		]);
 	}
 
 	/**
+	 * Adds a dependency for not empty
 	 *
+	 * @param $field
+	 * @return NovaDependencyContainer
+	 */
+	public function dependsOnEmpty($field) {
+		return $this->withMeta([
+			'dependencies' => array_merge($this->meta['dependencies'], [
+				array_merge($this->getFieldLayout($field), ['empty' => true])
+			])
+		]);
+	}
+
+	/**
+	 * Adds a dependency for not empty
 	 *
 	 * @param $field
 	 * @return NovaDependencyContainer
 	 */
 	public function dependsOnNotEmpty($field) {
 		return $this->withMeta([
-			'dependencies' => array_merge($this->meta['dependencies'], [['field' => $field, 'notEmpty' => true]])
+			'dependencies' => array_merge($this->meta['dependencies'], [
+				array_merge($this->getFieldLayout($field), ['notEmpty' => true])
+			])
 		]);
+	}
+
+	/**
+	 * Adds a dependency for null or zero (0)
+	 *
+	 * @param $field
+	 * @param $value
+	 * @return $this
+	 */
+	public function dependsOnNullOrZero($field) {
+		return $this->withMeta([
+			'dependencies' => array_merge($this->meta['dependencies'], [
+				array_merge($this->getFieldLayout($field), ['nullOrZero' => true])
+			])
+		]);
+	}
+
+	/**
+	 * Get layout for a specified field. Dot notation will result in {field}.{property}. If no dot was found it will
+	 * result in {field}.{field}, as it was in previous versions by default.
+	 *
+	 * @param $field
+	 * @param $value
+	 * @return array
+	 */
+	protected function getFieldLayout($field, $value = null) {
+		if(count(($field = explode('.', $field))) === 1) {
+			// backwards compatibility, property becomes field
+			$field[1] = $field[0];
+		}
+		return [
+			// literal form input name
+			'field'    => $field[0],
+			// property to compare
+			'property' => $field[1],
+			// value to compare
+			'value'    => $value,
+		];
 	}
 
 	/**
@@ -81,7 +138,18 @@ class NovaDependencyContainer extends Field {
 	protected function resolveAttribute($resource, $attribute) {
 		if($this->isDependenciesSatisfied($resource)) {
 			foreach($this->meta['fields'] as $field) {
-				$field->resolve($resource);
+				switch($field->component) {
+					// callback is set for `resolve` in relation
+					case 'belongs-to-field':
+					case 'morph-to-field':
+						$field->resolve($resource);
+						break;
+					// default callbacks are for resolveForDisplay, and if implemented correctly, should call `resolve`
+					// at the end of the chain
+					// @todo: at all packaged incompatible with `resolveForDisplay()`
+					default:
+						$field->resolveForDisplay($resource);
+				}
 			}
 		}
 
@@ -115,13 +183,24 @@ class NovaDependencyContainer extends Field {
 		if(array_key_exists('value', $dependency) && $dependency['value'] == $field) {
 			$retVal++;
 		}
+		if (array_key_exists('empty', $dependency) && empty($field)) {
+			$retVal++;
+		}
+		// inverted
+		if (array_key_exists('nullOrZero', $dependency) && in_array($field, [null, 0, '0'], true)) {
+			$retVal++;
+
+		}
 		return $retVal;
 	}
 
 	/**
+	 * Checks whether to add validation rules
+	 *
+	 * @param NovaRequest $request
 	 * @return bool
 	 */
-	protected function isDependenciesSatisfied($resource) {
+	protected function areDependenciesSatisfied(NovaRequest $request) {
 		if(!isset($this->meta['dependencies'])
 			|| !is_array($this->meta['dependencies'])) {
 			return false;
@@ -129,7 +208,7 @@ class NovaDependencyContainer extends Field {
 
 		$satisfiedCounts = 0;
 		foreach($this->meta['dependencies'] as $index => $dependency) {
-			$satisfiedCounts += $this->isSatisfied($dependency, $resource->{$dependency['field']} ?? $resource->get($dependency['field']) ?? null);
+			$satisfiedCounts += $this->isSatisfied($dependency, $resource->{$dependency['property']} ?? $resource->get($dependency['property']) ?? null);
 		}
 
 		return $satisfiedCounts == count($this->meta['dependencies']);
@@ -144,7 +223,7 @@ class NovaDependencyContainer extends Field {
 	 */
 	protected function getSituationalRulesSet(NovaRequest $request, string $propertyName = 'rules') {
 		$fieldsRules = [];
-		if(!$this->isDependenciesSatisfied($request)
+		if(!$this->areDependenciesSatisfied($request)
 			|| !isset($this->meta['fields'])
 			|| !is_array($this->meta['fields'])) {
 			return $fieldsRules;
