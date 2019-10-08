@@ -36,8 +36,8 @@ composer require epartment/nova-dependency-container
 
 ### Usage
 
-1. Add the `epartment\NovaDependencyContainer\HasDependencies` trait to your Nova Resource.
-2. Add the `epartment\NovaDependencyContainer\NovaDependencyContainer` to your Nova Resource `fields` method.
+1. Add the `Epartment\NovaDependencyContainer\HasDependencies` trait to your Nova Resource.
+2. Add the `Epartment\NovaDependencyContainer\NovaDependencyContainer` to your Nova Resource `fields` method.
 
 ```php
 class Page extends Resource
