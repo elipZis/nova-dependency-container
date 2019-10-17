@@ -136,7 +136,7 @@ class NovaDependencyContainer extends Field {
 	 * @return array|mixed
 	 */
 	protected function resolveAttribute($resource, $attribute) {
-		if($this->isDependenciesSatisfied($resource)) {
+		if($this->areDependenciesSatisfied($resource)) {
 			foreach($this->meta['fields'] as $field) {
 				switch($field->component) {
 					// callback is set for `resolve` in relation
@@ -197,10 +197,10 @@ class NovaDependencyContainer extends Field {
 	/**
 	 * Checks whether to add validation rules
 	 *
-	 * @param NovaRequest $request
+	 * @param mixed $resource
 	 * @return bool
 	 */
-	protected function areDependenciesSatisfied(NovaRequest $request) {
+	public function areDependenciesSatisfied($resource): bool {
 		if(!isset($this->meta['dependencies'])
 			|| !is_array($this->meta['dependencies'])) {
 			return false;
