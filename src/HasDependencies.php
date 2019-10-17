@@ -2,17 +2,15 @@
 
 namespace Epartment\NovaDependencyContainer;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Fields\FieldCollection;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 trait HasDependencies
 {
     protected $childFieldsArr = [];
-    
+
     /**
      * @param NovaRequest $request
      * @return FieldCollection|\Illuminate\Support\Collection
