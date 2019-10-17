@@ -214,20 +214,21 @@ class NovaDependencyContainer extends Field {
 		return $satisfiedCounts == count($this->meta['dependencies']);
 	}
 
-	/**
-	 * Get a rule set based on field property name
-	 *
-	 * @param NovaRequest $request
-	 * @param string      $propertyName
-	 * @return array
-	 */
-	protected function getSituationalRulesSet(NovaRequest $request, string $propertyName = 'rules') {
-		$fieldsRules = [];
-		if(!$this->areDependenciesSatisfied($request)
-			|| !isset($this->meta['fields'])
-			|| !is_array($this->meta['fields'])) {
-			return $fieldsRules;
-		}
+    /**
+     * Get a rule set based on field property name
+     *
+     * @param NovaRequest $request
+     * @param string $propertyName
+     * @return array
+     */
+    protected function getSituationalRulesSet(NovaRequest $request, string $propertyName = 'rules')
+    {
+        $fieldsRules = [$this->attribute => []];
+        if (!$this->areDependenciesSatisfied($request)
+            || !isset($this->meta['fields'])
+            || !is_array($this->meta['fields'])) {
+            return $fieldsRules;
+        }
 
 		/** @var Field $field */
 		foreach($this->meta['fields'] as $field) {

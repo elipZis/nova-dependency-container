@@ -26,13 +26,14 @@ trait HasDependencies
         foreach ($fields as $field) {
             if ($field instanceof NovaDependencyContainer) {
                 $availableFields[] = $field;
-				// @todo: this should only be checked on `$request->method() === 'PUT'`, e.g store/update.
-				if($field->areDependenciesSatisfied($request)) {
-					// check if dependency is sta
-					if ($this->doesRouteRequireChildFields()) {
-						$this->extractChildFields($field->meta['fields']);
-					}
-				}
+                // @todo: this should only be checked on `$request->method() === 'PUT'`, e.g store/update.
+                $model = $this->model();
+                if($field->areDependenciesSatisfied($request) || $model->id === null) {
+                    // check if dependency is sta
+                    if ($this->doesRouteRequireChildFields()) {
+                        $this->extractChildFields($field->meta['fields']);
+                    }
+                }
             } else {
                 $availableFields[] = $field;
             }
@@ -41,7 +42,7 @@ trait HasDependencies
         if ($this->childFieldsArr) {
             $availableFields = array_merge($availableFields, $this->childFieldsArr);
         }
-        
+
         return new FieldCollection(array_values($this->filter($availableFields)));
     }
 
@@ -50,10 +51,13 @@ trait HasDependencies
      */
     protected function doesRouteRequireChildFields() : bool
     {
-        return Str::endsWith(Route::currentRouteAction(), 'AssociatableController@index')
-            || Str::endsWith(Route::currentRouteAction(), 'ResourceStoreController@handle')
-            || Str::endsWith(Route::currentRouteAction(), 'ResourceUpdateController@handle')
-            || Str::endsWith(Route::currentRouteAction(), 'FieldDestroyController@handle');
+        return Str::endsWith(Route::currentRouteAction(), [
+            'FieldDestroyController@handle',
+            'ResourceUpdateController@handle',
+            'ResourceStoreController@handle',
+            'AssociatableController@index',
+            'MorphableController@index',
+        ]);
     }
 
 	/**
